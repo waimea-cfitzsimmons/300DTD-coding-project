@@ -1,6 +1,6 @@
-# PROJECT NAME HERE
+# Doggy Game: Jailbreak
 
-### Level 3 Programming Project by YOUR NAME HERE
+### Level 3 Programming Project by Cameron Fitzsimmons
 
 This project is assessed against [AS91906](https://www.nzqa.govt.nz/nqfdocs/ncea-resource/achievements/2019/as91906.pdf)
 
@@ -8,11 +8,7 @@ This project is assessed against [AS91906](https://www.nzqa.govt.nz/nqfdocs/ncea
 
 The project involves the programming of a game.
 
-BRIEF PROJECT DESCRIPTION HERE
-BRIEF PROJECT DESCRIPTION HERE
-BRIEF PROJECT DESCRIPTION HERE
-BRIEF PROJECT DESCRIPTION HERE
-
+You are a deathrow inmate in a R.I.O.T prison. You have three days to escape before you are executed. Can you do it?
 
 ## Source Code
 
