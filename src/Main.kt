@@ -27,6 +27,8 @@ class Location(val name: String, val description: String) {
     var south: Location? = null
     var west: Location? = null
     var item: Item? = null
+    var key: Item? = null
+    var blocked: Item? = null
 
 
     fun addNorth(location: Location) {
@@ -64,6 +66,23 @@ class Location(val name: String, val description: String) {
     fun removeItem() {
         item = null
     }
+
+    fun addKey(roomkey: Item) {
+        key = roomkey
+    }
+
+    fun removeKey() {
+        key = null
+    }
+
+    fun addBlock(block: Item){
+        blocked = block
+    }
+
+    fun removeBlock(){
+        blocked = null
+    }
+
 }
 
 /**
@@ -102,6 +121,7 @@ class GUI : JFrame(), ActionListener {
 
     //Set up actions
     private lateinit var searchButton: JButton
+    private lateinit var actionButton: JButton
 
     //Set up inventory
     private var inventoryWindow =InventoryWindow(inventory)
@@ -127,20 +147,25 @@ class GUI : JFrame(), ActionListener {
 
         private fun setUpMap(){
             val cell = Location("Prison Cell", "A small room with sleek metal walls. There is a small bed on the wall and a toilet in the corner. A large metal door with a small slit leads to a hallway.")
-            val hallway = Location("Hallway", "A long hallway white sleek white metal wall. Prison cells line the walls and there are doors at both ends.")
+            val hallway = Location("Hallway", "A long hallway with white sleek metal walls. Prison cells line the walls and there are doors at both ends.")
             val recreation = Location("Recreation Room", "A large room with white metal walls. A large sofa is in the middle of the room with a TV infront of it. A pool table is tucked into the corner.")
+            val intersection = Location("Intersection", "A intersection in the hallway connecting the rows of cells to the main hallway.")
             locations.add(cell)
             locations.add(hallway)
             locations.add(recreation)
+            locations.add(intersection)
 
             cell.addNorth(hallway)
             hallway.addEast(recreation)
+            hallway.addWest(intersection)
 
             val cue = Item("Pool Cue", "An old wooden pool cue.")
-//            inventory.add(cue)
+            val guard = Item("Prison Guard", "")
 
             recreation.addItem(cue)
 
+            intersection.addBlock(guard)
+            intersection.addKey(cue)
     }
 
     /**
@@ -212,6 +237,12 @@ class GUI : JFrame(), ActionListener {
         searchButton.font = baseFont
         searchButton.addActionListener(this)
         add(searchButton)
+
+        actionButton = JButton("action")
+        actionButton.bounds = Rectangle(400,877,200,40)
+        actionButton.font = baseFont
+        actionButton.addActionListener(this)
+        add(actionButton)
     }
 
 
@@ -237,6 +268,7 @@ class GUI : JFrame(), ActionListener {
             westButton -> walkWest()
             inventoryButton -> showInventory()
             searchButton -> searchRoom()
+            actionButton -> useItem()
         }
     }
 
@@ -285,23 +317,43 @@ class GUI : JFrame(), ActionListener {
      */
 
     private fun walkNorth() {
-        currentLocation = currentLocation.north!!
-        showLocation()
+        if (currentLocation.north!!.blocked != null){
+            searchResult.text = "You are blocked by ${currentLocation.north!!.blocked}!"
+        }
+        else {
+            currentLocation = currentLocation.north!!
+            showLocation()
+        }
     }
 
     private fun walkEast() {
-        currentLocation = currentLocation.east!!
-        showLocation()
+        if (currentLocation.east!!.blocked != null){
+            searchResult.text = "You are blocked by ${currentLocation.east!!.blocked}!"
+        }
+        else {
+            currentLocation = currentLocation.east!!
+            showLocation()
+        }
     }
 
     private fun walkWest() {
-        currentLocation = currentLocation.west!!
-        showLocation()
+        if (currentLocation.west!!.blocked != null){
+            searchResult.text = "You are blocked by ${currentLocation.west!!.blocked}!"
+        }
+        else {
+            currentLocation = currentLocation.west!!
+            showLocation()
+        }
     }
 
     private fun walkSouth() {
-        currentLocation = currentLocation.south!!
-        showLocation()
+        if (currentLocation.south!!.blocked != null){
+            searchResult.text = "You are blocked by ${currentLocation.south!!.blocked}!"
+        }
+        else {
+            currentLocation = currentLocation.south!!
+            showLocation()
+        }
     }
 
     /**
@@ -313,8 +365,15 @@ class GUI : JFrame(), ActionListener {
         inventoryWindow.isVisible = true
     }
 
-    private fun closeInventory(){
-        inventoryWindow.isVisible = false
+    private fun useItem() {
+        if (inventory.contains(currentLocation.west!!.key)) {
+            searchResult.text = "You used ${currentLocation.west!!.key!!.name}!"
+            currentLocation.west!!.removeKey()
+            currentLocation.west!!.removeBlock()
+        }
+        else {
+            searchResult.text = "There is nothing you can use here."
+        }
     }
 
     private fun searchRoom() {
