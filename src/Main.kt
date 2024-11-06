@@ -131,6 +131,7 @@ class GUI : JFrame(), ActionListener {
     /**
      * Create, build and run the UI
      */
+
     init {
         setupWindow()
         setUpMap()
@@ -142,14 +143,14 @@ class GUI : JFrame(), ActionListener {
         // Show the app, centred on screen
         setLocationRelativeTo(null)
         isVisible = true
-
         }
 
         private fun setUpMap(){
             val cell = Location("Prison Cell", "A small room with sleek metal walls. There is a small bed on the wall and a toilet in the corner. A large metal door with a small slit leads to a hallway.")
             val hallway = Location("Hallway", "A long hallway with white sleek metal walls. Prison cells line the walls and there are doors at both ends.")
             val recreation = Location("Recreation Room", "A large room with white metal walls. A large sofa is in the middle of the room with a TV infront of it. A pool table is tucked into the corner.")
-            val intersection = Location("Intersection", "A intersection in the hallway connecting the rows of cells to the main hallway.")
+            val intersection = Location("Intersection", "A intersection in the hallway connecting the rows of cells to the main hallway. An unconscious guard is laying on the floor.")
+            val security = Location("Security Office", "A small room full on monitors and buttons. The monitors are connected to security cameras that show the entire prison. For some reason here are no guards here.")
             locations.add(cell)
             locations.add(hallway)
             locations.add(recreation)
@@ -161,8 +162,10 @@ class GUI : JFrame(), ActionListener {
 
             val cue = Item("Pool Cue", "An old wooden pool cue.")
             val guard = Item("Prison Guard", "")
+            val key = Item("Key Card", "A guard's key card.")
 
             recreation.addItem(cue)
+            intersection.addItem(key)
 
             intersection.addBlock(guard)
             intersection.addKey(cue)
@@ -366,10 +369,50 @@ class GUI : JFrame(), ActionListener {
     }
 
     private fun useItem() {
-        if (inventory.contains(currentLocation.west!!.key)) {
+        useWest()
+    }
+
+    /**
+     * Check directions for use
+     */
+    private fun useWest() {
+        if (inventory.contains(currentLocation.west?.key)) {
             searchResult.text = "You used ${currentLocation.west!!.key!!.name}!"
             currentLocation.west!!.removeKey()
             currentLocation.west!!.removeBlock()
+        }
+        else {
+            useEast()
+        }
+    }
+
+    private fun useEast() {
+        if (inventory.contains(currentLocation.east?.key)) {
+            searchResult.text = "You used ${currentLocation.east!!.key!!.name}!"
+            currentLocation.east!!.removeKey()
+            currentLocation.east!!.removeBlock()
+        }
+        else {
+            useSouth()
+        }
+    }
+
+    private fun useSouth() {
+        if (inventory.contains(currentLocation.south?.key)) {
+            searchResult.text = "You used ${currentLocation.south!!.key!!.name}!"
+            currentLocation.south!!.removeKey()
+            currentLocation.south!!.removeBlock()
+        }
+        else {
+            useNorth()
+        }
+    }
+
+    private fun useNorth() {
+        if (inventory.contains(currentLocation.north?.key)) {
+            searchResult.text = "You used ${currentLocation.north!!.key!!.name}!"
+            currentLocation.north!!.removeKey()
+            currentLocation.north!!.removeBlock()
         }
         else {
             searchResult.text = "There is nothing you can use here."
