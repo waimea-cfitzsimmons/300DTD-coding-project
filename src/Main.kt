@@ -108,7 +108,7 @@ class GUI : JFrame(), ActionListener {
     val inventory = DefaultListModel<Item>()
 
     // Setup timer
-    var timer = 400
+    var timer = 120
     private lateinit var timerTitle: JLabel
 
 
@@ -145,36 +145,75 @@ class GUI : JFrame(), ActionListener {
         currentLocation = locations.first()
 
         showLocation()
-        countDownTimer()
         // Show the app, centred on screen
         setLocationRelativeTo(null)
         isVisible = true
+        countDownTimer()
         }
 
         private fun setUpMap(){
+            //Creates Locations and adds to list
             val cell = Location("Prison Cell", "A small room with sleek metal walls. There is a small bed on the wall and a toilet in the corner. A large metal door with a small slit leads to a hallway.")
             val hallway = Location("Hallway", "A long hallway with white sleek metal walls. Prison cells line the walls and there are doors at both ends.")
             val recreation = Location("Recreation Room", "A large room with white metal walls. A large sofa is in the middle of the room with a TV infront of it. A pool table is tucked into the corner.")
             val intersection = Location("Intersection", "A intersection in the hallway connecting the rows of cells to the main hallway. An unconscious guard is laying on the floor.")
-            val security = Location("Security Office", "A small room full on monitors and buttons. The monitors are connected to security cameras that show the entire prison. For some reason here are no guards here.")
+            val security = Location("Security Office", "A small room full on monitors and buttons. The monitors are connected to security cameras that show the entire prison. You watch on the monitors as the rest of the Prison is in chaos.")
+            val lose = Location("", "")
+            val hallway2 = Location("Hallway", "A long hallway with bloody metal walls.Torn posters preaching unity and cooperation of all mankind line the walls. There is a stench of decay.")
+            val hallway3 = Location("Hallway", "A Short hallway branching off two different ways. Blood splatters the walls and you see a mangled and torn pile of meat and armour in the corner.")
+            val hallway4 = Location("Hallway", "A long hallway with a branch off to the side. Muddy Bootmarks all lead from around the corner, all heading in the same direction.")
+            val destroyway = Location("Destroyed Room", "A small room half covered in debris. The roof is caved in and a small fire is going in the corner. You can see the remains of a guard that was crushed under the rubble.")
+            val hallway5 = Location("Hallway", "A long hallway covered in dirt and muck. The floor is covered in muddy bootprints all facing one direction.")
+            val hallway6 = Location("Hallway", "A short hallway leading to a single steal door.")
+            val armoury = Location("Armoury", "A large armoury filled with lockers and benches. Most of the lockers are empty and the whole place is in disarray")
+
             locations.add(cell)
             locations.add(hallway)
             locations.add(recreation)
             locations.add(intersection)
+            locations.add(security)
+            locations.add(hallway2)
+            locations.add(hallway3)
+            locations.add(hallway4)
+            locations.add(destroyway)
+            locations.add(hallway5)
+            locations.add(hallway6)
+            locations.add(armoury)
+            locations.add(lose)
 
+            // connects all the locations
+            hallway6.addWest(armoury)
+            hallway5.addWest(hallway6)
+            hallway4.addWest(hallway5)
+            hallway2.addWest(destroyway)
+            hallway3.addNorth(security)
+            hallway3.addWest(hallway2)
+            intersection.addNorth(hallway3)
+            intersection.addSouth(hallway4)
             cell.addNorth(hallway)
             hallway.addEast(recreation)
             hallway.addWest(intersection)
 
-            val cue = Item("Pool Cue", "An old wooden pool cue.")
+            // Creates items
+            val cue = Item("Pool Cue", "A wood pool cue.")
             val guard = Item("Prison Guard", "")
-            val key = Item("Key Card", "A guard's key card.")
+            val red = Item("Red Card", "A red key card.")
+            val blue = Item("Blue Card", "A blue key card.")
+            val redDoor = Item("Red Security Door","")
+            val blueDoor = Item("Blue Security Door","")
 
+            // puts the items in locations
             recreation.addItem(cue)
-            intersection.addItem(key)
+            intersection.addItem(red)
+            destroyway.addItem(blue)
 
+            //adds 'blocks' and 'keys'
+            hallway6.addBlock(blueDoor)
+            hallway6.addKey(blue)
             intersection.addBlock(guard)
             intersection.addKey(cue)
+            security.addBlock(redDoor)
+            security.addKey(red)
     }
 
     /**
@@ -206,8 +245,8 @@ class GUI : JFrame(), ActionListener {
         locationDesc.font = baseFont
         add(locationDesc)
 
-        timerTitle = JLabel("Seconds until guards notice: $timer", SwingConstants.CENTER)
-        timerTitle.bounds = Rectangle(282, 290, 435, 42)
+        timerTitle = JLabel("Seconds until lockdown activates: $timer", SwingConstants.CENTER)
+        timerTitle.bounds = Rectangle(247, 290, 507, 82)
         timerTitle.font = baseFont
         add(timerTitle)
 
@@ -294,9 +333,14 @@ class GUI : JFrame(), ActionListener {
     private fun countDownTimer() {
         while (timer >= 0) {
             timer = timer - 1
-            Thread.sleep(5000)
-            timerTitle.text = "Seconds until guards notice: $timer"
+            Thread.sleep(1000)
+            timerTitle.text = "Seconds until lockdown activates: $timer"
 
+            if (timer <= 0) {
+                timerTitle.text = "<html>Lockdown has been activated, your fate is sealed.</html>"
+                currentLocation = locations.last()
+                showLocation()
+            }
         }
     }
 
@@ -493,7 +537,7 @@ class InventoryWindow(val inventory: DefaultListModel<Item>) : JDialog() {
         add(inventoryLabel)
 
         inventoryList = JList(inventory)
-        inventoryList.bounds = Rectangle(45, 106, 352, 357)
+        inventoryList.bounds = Rectangle(45, 106, 400, 357)
         inventoryList.font = baseFont
         add(inventoryList)
 
