@@ -15,12 +15,12 @@ import java.awt.*
 import java.awt.event.*
 import javax.swing.*
 
-
 //=============================================================================================
 
 /**
  *  Location Class
  */
+
 class Location(val name: String, val description: String) {
     var north: Location? = null
     var east: Location? = null
@@ -107,6 +107,11 @@ class GUI : JFrame(), ActionListener {
     // Setup inventory
     val inventory = DefaultListModel<Item>()
 
+    // Setup timer
+    var timer = 400
+    private lateinit var timerTitle: JLabel
+
+
 
     // Setup some properties to hold the UI elements
     private lateinit var locationLabel: JLabel
@@ -140,6 +145,7 @@ class GUI : JFrame(), ActionListener {
         currentLocation = locations.first()
 
         showLocation()
+        countDownTimer()
         // Show the app, centred on screen
         setLocationRelativeTo(null)
         isVisible = true
@@ -199,6 +205,11 @@ class GUI : JFrame(), ActionListener {
         locationDesc.bounds = Rectangle(100, 429, 800, 141)
         locationDesc.font = baseFont
         add(locationDesc)
+
+        timerTitle = JLabel("Seconds until guards notice: $timer", SwingConstants.CENTER)
+        timerTitle.bounds = Rectangle(282, 290, 435, 42)
+        timerTitle.font = baseFont
+        add(timerTitle)
 
         searchResult = JLabel("", SwingConstants.CENTER)
         searchResult.bounds = Rectangle(232, 550, 537, 141)
@@ -263,6 +274,7 @@ class GUI : JFrame(), ActionListener {
     /**
      * Handle any UI events
      */
+
     override fun actionPerformed(e: ActionEvent?) {
         when (e?.source) {
             northButton -> walkNorth()
@@ -274,6 +286,20 @@ class GUI : JFrame(), ActionListener {
             actionButton -> useItem()
         }
     }
+
+    /**
+     *  Count down timer
+     */
+
+    private fun countDownTimer() {
+        while (timer >= 0) {
+            timer = timer - 1
+            Thread.sleep(5000)
+            timerTitle.text = "Seconds until guards notice: $timer"
+
+        }
+    }
+
 
     /**
      * Check if a room is connected
@@ -445,7 +471,6 @@ class InventoryWindow(val inventory: DefaultListModel<Item>) : JDialog() {
 
 
     init {
-        inventory.addElement(Item("Cheese", "Yummy!"))
         setupWindow()
         buildInvUI()
     }
@@ -482,6 +507,8 @@ class InventoryWindow(val inventory: DefaultListModel<Item>) : JDialog() {
 //        inventoryList.text =
 //    }
 }
+
+//============================================================================
 
 /**
  * Launch the application
