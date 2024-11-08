@@ -9,7 +9,6 @@
  * ------------------------------------------------------------------------
  */
 
-
 import com.formdev.flatlaf.FlatDarkLaf
 import java.awt.*
 import java.awt.event.*
@@ -29,7 +28,6 @@ class Location(val name: String, val description: String) {
     var item: Item? = null
     var key: Item? = null
     var blocked: Item? = null
-
 
     fun addNorth(location: Location) {
         if (north == null) {
@@ -111,8 +109,6 @@ class GUI : JFrame(), ActionListener {
     var timer = 120
     private lateinit var timerTitle: JLabel
 
-
-
     // Setup some properties to hold the UI elements
     private lateinit var locationLabel: JLabel
     private lateinit var locationDesc: JLabel
@@ -152,7 +148,7 @@ class GUI : JFrame(), ActionListener {
         }
 
         private fun setUpMap(){
-            //Creates Locations and adds to list
+            //Creates Locations
             val cell = Location("Prison Cell", "A small room with sleek metal walls. There is a small bed on the wall and a toilet in the corner. A large metal door with a small slit leads to a hallway.")
             val hallway = Location("Hallway", "A long hallway with white sleek metal walls. Prison cells line the walls and there are doors at both ends.")
             val recreation = Location("Recreation Room", "A large room with white metal walls. A large sofa is in the middle of the room with a TV infront of it. A pool table is tucked into the corner.")
@@ -166,7 +162,10 @@ class GUI : JFrame(), ActionListener {
             val hallway5 = Location("Hallway", "A long hallway covered in dirt and muck. The floor is covered in muddy bootprints all facing one direction.")
             val hallway6 = Location("Hallway", "A short hallway leading to a single steal door.")
             val armoury = Location("Armoury", "A large armoury filled with lockers and benches. Most of the lockers are empty and the whole place is in disarray")
+            val hallway7 = Location("Hallway", "A long hallway leading to the exit")
+            val exit = Location("Exit", "")
 
+            //adds locations to the list
             locations.add(cell)
             locations.add(hallway)
             locations.add(recreation)
@@ -179,11 +178,15 @@ class GUI : JFrame(), ActionListener {
             locations.add(hallway5)
             locations.add(hallway6)
             locations.add(armoury)
+            locations.add(hallway7)
+            locations.add(exit)
             locations.add(lose)
 
             // connects all the locations
+            hallway7.addEast(exit)
             hallway6.addWest(armoury)
             hallway5.addWest(hallway6)
+            hallway4.addSouth(hallway7)
             hallway4.addWest(hallway5)
             hallway2.addWest(destroyway)
             hallway3.addNorth(security)
@@ -201,13 +204,19 @@ class GUI : JFrame(), ActionListener {
             val blue = Item("Blue Card", "A blue key card.")
             val redDoor = Item("Red Security Door","")
             val blueDoor = Item("Blue Security Door","")
+            val green = Item("Green Card", "A green key card.")
+            val greenDoor = Item("Green Security Door","")
+
 
             // puts the items in locations
+            security.addItem(green)
             recreation.addItem(cue)
-            intersection.addItem(red)
+            armoury.addItem(red)
             destroyway.addItem(blue)
 
             //adds 'blocks' and 'keys'
+            exit.addBlock(greenDoor)
+            exit.addKey(green)
             hallway6.addBlock(blueDoor)
             hallway6.addKey(blue)
             intersection.addBlock(guard)
@@ -235,6 +244,7 @@ class GUI : JFrame(), ActionListener {
     private fun buildMainUI() {
         val baseFont = Font(Font.SANS_SERIF, Font.PLAIN, 30)
 
+        // Text
         locationLabel = JLabel("LOCATION NAME GOES HERE", SwingConstants.CENTER)
         locationLabel.bounds = Rectangle(250, 100, 500, 42)
         locationLabel.font = baseFont
@@ -255,6 +265,7 @@ class GUI : JFrame(), ActionListener {
         searchResult.font = baseFont
         add(searchResult)
 
+        // Buttons
         northButton = JButton("North")
         northButton.bounds = Rectangle(380,687,240,40)
         northButton.font = baseFont
@@ -308,6 +319,14 @@ class GUI : JFrame(), ActionListener {
         checkSouth()
         checkEast()
         checkWest()
+
+        if (currentLocation.name == "Exit"){
+            locationDesc.text = "Congratulations you escaped from the facility!"
+            northButton.isEnabled = false
+            southButton.isEnabled = false
+            eastButton.isEnabled = false
+            westButton.isEnabled = false
+        }
     }
 
     /**
@@ -332,14 +351,19 @@ class GUI : JFrame(), ActionListener {
 
     private fun countDownTimer() {
         while (timer >= 0) {
-            timer = timer - 1
-            Thread.sleep(1000)
-            timerTitle.text = "Seconds until lockdown activates: $timer"
+            if (currentLocation.name == "Exit"){
+                timerTitle.text = ""
+            }
+            else {
+                timer = timer - 1
+                Thread.sleep(1000)
+                timerTitle.text = "Seconds until lockdown activates: $timer"
 
-            if (timer <= 0) {
-                timerTitle.text = "<html>Lockdown has been activated, your fate is sealed.</html>"
-                currentLocation = locations.last()
-                showLocation()
+                if (timer <= 0) {
+                    timerTitle.text = "<html>Lockdown has been activated, your fate is sealed.</html>"
+                    currentLocation = locations.last()
+                    showLocation()
+                }
             }
         }
     }
@@ -504,12 +528,13 @@ class GUI : JFrame(), ActionListener {
 
 
 //=============================================================================================
-
+/**
+ * Inventory Window
+ */
 class InventoryWindow(val inventory: DefaultListModel<Item>) : JDialog() {
 
 
     private lateinit var inventoryLabel: JLabel
-    private lateinit var inventoryDesc: JLabel
     private lateinit var backButton: JButton
     private lateinit var inventoryList: JList<Item>
 
@@ -547,12 +572,52 @@ class InventoryWindow(val inventory: DefaultListModel<Item>) : JDialog() {
         add(backButton)
     }
 
-//    private fun loadList(){
-//        inventoryList.text =
-//    }
 }
 
 //============================================================================
+/**
+ * Intro window
+ */
+
+class TutorialWindow() : JDialog() {
+
+
+    private lateinit var tutorialLabel: JLabel
+    private lateinit var tutorialDesc: JLabel
+
+
+    init {
+        setupWindow()
+        buildTutorialUI()
+        isVisible = true
+    }
+
+    private fun setupWindow() {
+        title = "Doggy Game: jailbreak"
+        contentPane.preferredSize = Dimension(500, 600)
+        isResizable = false
+        isModal = true
+        layout = null
+        pack()
+    }
+
+    private fun buildTutorialUI() {
+        val baseFont = Font(Font.SANS_SERIF, Font.PLAIN, 24)
+
+        tutorialLabel = JLabel("Doggy Game: Jailbreak", SwingConstants.CENTER)
+        tutorialLabel.bounds = Rectangle(120, 132, 261, 35)
+        tutorialLabel.font = baseFont
+        add(tutorialLabel)
+
+        tutorialDesc = JLabel("<html>You are trapped in a R.I.O.T prison. However there was a power cut that led to your cell door being opened." +
+                " You now have 120  seconds to escape before lock-down activates. Navigate the prison and search for items in order to escape. Use items" +
+                " in order to clear blocks. Close this window to begin.</html>")
+
+        tutorialDesc.bounds = Rectangle(54, 167, 393, 387)
+        tutorialDesc.font = baseFont
+        add(tutorialDesc)
+    }
+}
 
 /**
  * Launch the application
